@@ -11,7 +11,7 @@ public class Main {
      * @return true if player is alive, false otherwise
      */
     public static boolean monsterRoom(Hero h, Enemy e) throws UnsupportedAudioFileException, IOException, LineUnavailableException{
-        MusicPlayer music = new MusicPlayer("C:\\Users\\silve\\Desktop\\Java\\CECS 277\\Project 1\\cynthia.wav");
+        MusicPlayer music = new MusicPlayer("C:\\Users\\silve\\Desktop\\Java\\CECS 277\\Project 1\\ema.wav");
         music.play(0);
         Scanner input = new Scanner(System.in);
         System.out.println("You've encountered a " +  e.getName() + "\n"); 
