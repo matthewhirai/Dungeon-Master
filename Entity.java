@@ -9,7 +9,6 @@ public abstract class Entity {
         hp = mHp;
     }
 
-    @Override
     public abstract String attack(Entity e);
 
     /**

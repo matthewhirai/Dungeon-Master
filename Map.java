@@ -2,13 +2,24 @@ import java.util.*;
 import java.io.*;
 import java.awt.Point;
 public class Map {
-    private char[][] map = new char[5][5];
+    private char[][] map = new char[5][5];;
     private boolean[][] revealed = new boolean[5][5];
+    private static Map instance;
 
     /**
-     * sets all of the elements in revealed to false
-    */
-    public Map() {
+     * Singleton
+     */
+    private Map() {}
+
+    /**
+     * Makes that so there's only one map
+     * @return instance
+     */
+    public static Map getInstance() {
+        if (instance == null) {
+            instance = new Map();
+        }
+        return instance;
     }
 
     /**
@@ -22,10 +33,10 @@ public class Map {
                 input = "C:\\Users\\silve\\Desktop\\Java\\CECS 277\\Project 1\\Map1.txt";
             }
             else if (mapNum == 2) {
-                input = "C:\\Users\\silve\\Desktop\\Java\\CECS 277\\Project 1\\Map2.txt";
+                input = "Map2.txt";
             }
             else if (mapNum == 3) {
-                input = "C:\\Users\\silve\\Desktop\\Java\\CECS 277\\Project 1\\Map3.txt";
+                input = "Map3.txt";
             }
             Scanner read = new Scanner(new File(input));
             int i = 0;

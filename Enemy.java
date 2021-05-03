@@ -1,5 +1,4 @@
-import java.util.Random;
-public class Enemy extends Entity{
+public abstract class Enemy extends Entity{
     /**
      * calls Entity calls to get name and maxHp
      * @param n
@@ -9,13 +8,10 @@ public class Enemy extends Entity{
         super(n, mHp);
     }
 
-    @Override
-    public String attack(Entity h) {
-        Random random = new Random();
-        int damage = random.nextInt(3) + 1;
-        String str = getName() + " attacks " + h.getName() + " for " + 
-            damage + " damage";
-        h.takeDamage(damage);
-        return str;
-    }
+    /**
+     * Attacks hero
+     * @param Entity e since all entities are able to attack any entity, we call the class itself as parameter
+     * @returns string text for player to read after attacking which includes entity attacked and the damage done
+     */
+    public abstract String attack( Entity e );
 }

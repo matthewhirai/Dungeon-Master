@@ -1,48 +1,37 @@
 import java.util.*;
 import java.io.*;
 public class EnemyGenerator {
-    private ArrayList<Enemy> enemyList = new ArrayList<Enemy>();;
 
     /**
-     * loads the enemies
-     */
-    public EnemyGenerator() {
-        try {
-            Scanner read = new Scanner(new File("C:\\Users\\silve\\Desktop\\Java\\CECS 277\\Project 1\\Enemies.txt"));
-            while (read.hasNextLine()) {
-                String line = read.nextLine();  
-                String[] e = line.split(",");
-                String enemyName = e[0];
-                int enemyHp = Integer.parseInt(e[1]);
-                enemyList.add(new Enemy(enemyName, enemyHp));
-            }
-            read.close();
-        }catch (FileNotFoundException fnf){
-            System.out.println("File was not found");
-        }
-    }
-
-    /**
-     * Generates a random enemy from the list
-     * Determines if it's an enemy or magical enemy
+     * Generates a random enemy 
+     * Determines if it's an enemy or magical enemy depending on the level
      * @return enemy
      */
-   public Enemy generateEnemy() {
-       Random random = new Random();
-       int i = random.nextInt(enemyList.size());
-       int num = random.nextInt(2) + 1;
-       String enemy = "";
-       if (num == 1) {
-           enemy = "Magical " + enemyList.get(i).getName();
+   public Enemy generateEnemy(int level) {
+       int enemy = (int) Math.floor( Math.random() * (5 - 1) + 1);
+       Enemy e = new Troll();
+       if (enemy == 1) {
+           e = new Goblin();
        }
-       else {
-           enemy = enemyList.get(i).getName();
+       else if (enemy == 2) {
+           e = new Froglok();
+       }
+       else if (enemy == 3) {
+           e = new Orc();
+       }
+       else if (enemy == 4) {
+           e = new Troll();
        }
        
-       Enemy e = new Enemy(enemy, enemyList.get(i).getMaxHp());
-       if (enemy.contains("Magical")) {
-           e = new MagicalEnemy(enemy, enemyList.get(i).getMaxHp());
+       int lvlUp = (int) Math.floor( Math.random() * (3 - 1) + 1);
+       for (int i = 0; i < level - 1; i++) {
+           if (lvlUp == 1) {
+               e = new Warrior(e);
+           }
+           else if (lvlUp == 2) {
+               e = new Warlock(e);
+           }
        }
        return e;
-   }
+    }
 }

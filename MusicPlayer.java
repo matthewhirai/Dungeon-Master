@@ -24,9 +24,7 @@ public class MusicPlayer {
         clip = AudioSystem.getClip(); 
           
         // open audioInputStream to the clip 
-        clip.open(audioInputStream); 
-          
-        clip.loop(Clip.LOOP_CONTINUOUSLY); 
+        clip.open(audioInputStream);  
     } 
       
     // Method to play the audio 
@@ -42,6 +40,7 @@ public class MusicPlayer {
     public void play() {
         //start the clip 
         clip.start(); 
+        clip.loop(Clip.LOOP_CONTINUOUSLY);
           
         status = "play"; 
     }

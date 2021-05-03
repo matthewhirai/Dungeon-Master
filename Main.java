@@ -2,22 +2,22 @@ import java.util.*;
 import java.io.*;
 import java.awt.Point;
 import javax.sound.sampled.*;
-public class Main {
+public class Main{
 
     /**
-     * player fights mosnter or runs away in a random direction from monster 
+     * player fights monster or runs away in a random direction from monster 
      * @param h
      * @param e
      * @return true if player is alive, false otherwise
      */
     public static boolean monsterRoom(Hero h, Enemy e) throws UnsupportedAudioFileException, IOException, LineUnavailableException{
-        MusicPlayer music = new MusicPlayer("C:\\Users\\silve\\Desktop\\Java\\CECS 277\\Project 1\\ema.wav");
+        MusicPlayer music = new MusicPlayer("ema.wav");
         music.play(0);
-        Scanner input = new Scanner(System.in);
         System.out.println("You've encountered a " +  e.getName() + "\n"); 
         int option = 0;
         boolean alive = true;
         char coord = 'x';
+        Map map = Map.getInstance();
 
         while (e.getHp() != 0) {
             System.out.println(e.toString());
@@ -47,22 +47,42 @@ public class Main {
                     }
                     else if (direction == 3) {
                         coord = h.goWest();
-                    }                    
+                    }             
                 }
-                if (coord == 'f') {
-                    music.stop();
-                    System.out.println("You found the exit. Proceeding to the next level.\n");
-                    MusicPlayer music2 = new MusicPlayer("C:\\Users\\silve\\Desktop\\Java\\CECS 277\\Project 1\\levelup.wav");
-                    music2.play(0);
-                    h.levelUp();
+                if (coord == 'i') {
+                    int item = (int) Math.floor(Math.random() * 2) + 1;
+                    map.removeCharAtLoc(h.getLoc());
+                    if (item == 1) {
+                        System.out.println("You found a Health Potion! You drink it to restore your health.\n");
+                        h.heal(15);
+                    }
+                    else if (item == 2) {
+                        System.out.println("You found a Key! You put it in your pocket.\n");
+                        h.pickUpKey();
+                    }
+                }
+                else if (coord == 'f') {
+                    if (h.hasKey()) {
+                        System.out.println("You found the exit. Proceeding to the next level.\n");
+                        h.useKey();
+                        music.stop();
+                        MusicPlayer music2 = new MusicPlayer("levelup.wav");
+                        music2.play(0);
+                        h.levelUp();
+                    }
+                    else {
+                        System.out.println("You don't have a key to open the door.\n");
+                    }
+                }
+                else if (coord == 's') {
+                    store(h);
                 }
             }
         }
+        music.stop();
         if (alive) {
-            music.stop();
             return true;
         }
-        music.stop();
         return false;
     }
 
@@ -73,9 +93,10 @@ public class Main {
      * @return true if player is alive, false otherwise
      */
     public static boolean fight(Hero h, Enemy e) {
-        Scanner input = new Scanner(System.in);
+        Map map = Map.getInstance();
         int option = 0;
         String fightingString = "";
+        int gold = (int) Math.floor(Math.random() * 8) + 3;
 
         while (option == 0) {
             System.out.println("1. Physical Attack\n2. Magical Attack");
@@ -101,7 +122,7 @@ public class Main {
         if (h.getHp() != 0) {
             if (e.getHp() != 0) {
                 fightingString = e.attack(h);
-                System.out.println(fightingString + "\n");
+                System.out.println(e.getName() + " " + fightingString + "\n");
                 if (h.getHp() != 0) {
                     return true;
                 }    
@@ -109,6 +130,9 @@ public class Main {
             }
             else {
                 System.out.println("You defeated the " + e.getName() + "!\n");
+                System.out.println("You got " + gold + "G!");
+                h.collectGold(gold); 
+                map.removeCharAtLoc(h.getLoc());
                 return true;
             }
         }
@@ -117,7 +141,43 @@ public class Main {
         }
     }
 
+    /**
+     * store has potions and keys to sell to player
+     * potion immediately consumed
+     * key is placed in inventory until used
+     * @param h
+     */
+    public static void store(Hero h){
+        int option = 0;
+        int item = 0;
+        System.out.print("Welcome to my store traveler. ");
+        while (option != 2) {
+            System.out.println("What would you like to do?\n1. Enter\n2. Exit");
+            option = CheckInput.getIntRange(1, 2);
+            if (option == 1) {
+                System.out.println("What would you like to buy?\nYou have "+h.getGold()+"."+"\n1. Health Potion   25g\n2. Key             50g");
+                item = CheckInput.getIntRange(1, 2);
+                if (item == 1 && h.getGold() >= 25) {
+                    System.out.println("You buy Health Potion! You drink it to restore your health.\n");
+                    h.heal(15);
+                    h.spendGold(25);
+                }
+                else if (item == 2 && h.getGold() >= 50) {
+                    System.out.println("You buy a key! You puy it in your pocket.\n");
+                    h.pickUpKey();
+                    h.spendGold(50);
+                }
+                else {
+                    System.out.println("You cannot afford the item.");
+                    option = 0;
+                }
+            }
+        }
+    }
+
     public static void main(String[] args) throws UnsupportedAudioFileException, IOException, LineUnavailableException {
+        MusicPlayer music;
+        Map map = Map.getInstance();
         EnemyGenerator generator = new EnemyGenerator();
         Scanner in = new Scanner(System.in);
         System.out.println("Hello fellow traveler. What is your name? ");
@@ -128,6 +188,7 @@ public class Main {
         System.out.println(player);
 
         int input = 0;
+        int item;
         char coord = 'x';
         boolean alive = true;
 
@@ -149,30 +210,50 @@ public class Main {
             else if (input == 5) {
                 break;
             } 
-            //m -> monsterRoom, x -> out of bounds, i -> heal, n -> nothing, f -> next map
+            //m -> monsterRoom, x -> out of bounds, i -> heal, n -> nothing, f -> next map, s -> store
             if (coord == 'm') {
-                Enemy e = generator.generateEnemy();
+                map.reveal(player.getLoc());
+                Enemy e = generator.generateEnemy(player.getLevel());
                 alive = monsterRoom(player, e);
             }
             else if (coord == 'x') {
                 System.out.println("You cannot go out of bounds\n");
             }
             else if (coord == 'i') {
-                System.out.println("You found a Health Potion! You drink it to restore your health\n");
-                player.heal(25);
+                item = (int) Math.floor(Math.random() * 2) + 1;
+                map.removeCharAtLoc(player.getLoc());
+                if (item == 1)
+                {
+                  System.out.println("You found a Health Potion! You drink it to restore your health.\n");
+                  player.heal(15);
+                }
+                else if (item == 2)
+                {
+                  System.out.println("You found a Key! You put it in your pocket.\n");
+                  player.pickUpKey();
+                }
             }
             else if (coord == 'n') {
                 System.out.println("There is nothing here.\n");
             }
             else if (coord == 'f') {
-                System.out.println("You found the exit. Proceeding to the next level.\n");
-                MusicPlayer music = new MusicPlayer("C:\\Users\\silve\\Desktop\\Java\\CECS 277\\Project 1\\levelup.wav");
-                music.play(0);
-                player.levelUp();
+                if (player.hasKey()) {
+                    System.out.println("You found the exit. Proceeding to the next level.\n");
+                    player.useKey();
+                    music = new MusicPlayer("levelup.wav");
+                    music.play(0);
+                    player.levelUp();
+                }
+                else {
+                    System.out.println("You don't have a key to open the door.\n");
+                }
+            }
+            else if (coord == 's') {
+                store(player);
             }
             System.out.println(player);    
         }
-        MusicPlayer music = new MusicPlayer("C:\\Users\\silve\\Desktop\\Java\\CECS 277\\Project 1\\died.wav");
+        music = new MusicPlayer("died.wav");
         music.play(0);
         System.out.println("Game Over\n");
     }
